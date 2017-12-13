@@ -1,0 +1,31 @@
+from intros.email_service import EmailService
+from intros.intro_config import *
+from intros.matching import Matching
+from intros.member import Member
+
+SENDER_GMAIL_ACCT = 'will@contrarycap.com'
+# MEMBER_SPREADSHEET = 'directory.csv'
+MEMBER_SPREADSHEET = 'test_directory.csv'
+EMAIL_TEMPLATE = contrary_intro_email_template
+SUBJECT_LINE = 'Contrary Connections Bot'
+
+email_service = EmailService(SENDER_GMAIL_ACCT)
+
+mailing_list = Member.read_from_spreadsheet(MEMBER_SPREADSHEET)
+
+intro_pairings = Matching.vp_region_matching(mailing_list)
+
+# execute email send to pairings
+for pair in intro_pairings:
+    a, b = pair[0], pair[1]
+
+    vars_ = dict(name1=a.name, name2=b.name,
+                 school1=a.university, school2=b.university,
+                 major1=a.major, major2=b.major,
+                 enjoy1=a.interests, enjoy2=b.interests,
+                 bio1=a.description, bio2=b.description)
+
+    print('Emailing to {} and {}'.format(a.name, b.name))
+    email_service.send_message(a, b, EMAIL_TEMPLATE, vars_, SUBJECT_LINE)
+
+email_service.log_off()
